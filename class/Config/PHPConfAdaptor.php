@@ -1,9 +1,10 @@
 <?php
 namespace Slime\Config;
 
+use Slime\Container\ContainerObject;
 use SlimeInterface\Config\ConfigureInterface;
 
-class PHPConfiguration implements ConfigureInterface
+class PHPConfAdaptor extends ContainerObject implements ConfigureInterface
 {
     protected $sCurrentFile = '';
     protected $sDefaultFile = '';

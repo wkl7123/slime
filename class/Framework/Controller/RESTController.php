@@ -42,11 +42,13 @@ abstract class RESTController
         $this->RESP
             ->setHeader('Content-Type', 'text/json; charset=utf-8')
             ->setBody(
-                json_encode([
-                    'code' => $this->iErr,
-                    'msg'  => $this->sErr,
-                    'data' => count($this->aData) === 0 ? new \ArrayObject() : $this->aData
-                ], JSON_UNESCAPED_UNICODE)
+                json_encode(
+                    [
+                        'code' => $this->iErr,
+                        'msg'  => $this->sErr,
+                        'data' => count($this->aData) === 0 ? new \ArrayObject() : $this->aData
+                    ], JSON_UNESCAPED_UNICODE
+                )
             );
     }
 }
