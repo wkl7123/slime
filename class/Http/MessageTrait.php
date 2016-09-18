@@ -203,6 +203,7 @@ trait MessageTrait
         if (isset($New->aHeader)) {
             unset($New->aHeader[$name]);
         }
+        return $this;
     }
 
     /**
