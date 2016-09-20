@@ -1,7 +1,7 @@
 <?php
 namespace Slime\Config;
 
-class JsonAdaptor extends PHPConfAdaptor
+class JsonConfAdaptor extends PHPConfAdaptor
 {
     public function load()
     {
