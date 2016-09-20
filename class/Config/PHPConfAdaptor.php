@@ -24,9 +24,6 @@ class PHPConfAdaptor extends ContainerObject implements ConfigureInterface
         $this->bDefault     = $this->sCurrentFile === $this->sDefaultFile;
     }
 
-    /**
-     * @return bool
-     */
     public function load()
     {
         $this->aData = $this->bDefault ?

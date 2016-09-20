@@ -3,14 +3,14 @@ namespace Slime\Config;
 
 class JsonAdaptor extends PHPConfAdaptor
 {
-    /**
-     * @return bool
-     */
     public function load()
     {
         $aData = $this->bDefault ?
-            require $this->sCurrentFile :
-            array_merge(require $this->sCurrentFile, require $this->sDefaultFile);
+            json_decode(require $this->sCurrentFile, true) :
+            array_merge(
+                json_decode(require $this->sCurrentFile, true),
+                json_decode(require $this->sDefaultFile, true)
+            );
 
         $this->aData = json_decode($aData, true);
     }
