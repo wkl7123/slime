@@ -10,10 +10,11 @@ use SlimeInterface\Container\ContainerInterface;
  * @package Slime\Log
  * @author  smallslime@gmail.com
  */
-class LoggerFactory
+class LoggerFactory extends ContainerObject
 {
-    public static function create($aConf, ContainerInterface $C)
+    public function create($aConf)
     {
+        $C      = $this->_getContainer();
         $Logger = new Logger($aConf['level']);
         $Logger->__init__($C);
         foreach ($aConf['adaptor'] as $sKey => $aRow) {
