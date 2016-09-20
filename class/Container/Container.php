@@ -27,6 +27,11 @@ class Container implements ContainerInterface, \ArrayAccess
         return $Obj;
     }
 
+    public function __get($sName)
+    {
+        return $this->get($sName);
+    }
+
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
