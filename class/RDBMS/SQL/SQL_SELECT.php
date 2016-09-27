@@ -49,7 +49,7 @@ class SQL_SELECT extends SQLAbstract implements SelectInterface
      */
     public function fields($sField_V)
     {
-        $this->naField = func_get_args();
+        $this->naField = is_array($sField_V) ? $sField_V : func_get_args();
         return $this;
     }
 
