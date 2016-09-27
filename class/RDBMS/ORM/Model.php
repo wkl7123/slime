@@ -169,11 +169,10 @@ class Model extends ContainerObject implements ModelInterface
     /**
      * @param SQLInterface $SQL
      *
-     * @return null|int|CollectionInterface|string
-     *              null: no execute
-     *              int: update/delete(effect rows);
-     *              string: insert(last insert id);
-     *              Collection: select
+     * @return array [int|CollectionInterface|string : result, int : errCode, string : errMsg]
+     *               int: update/delete(effect rows);
+     *               string: insert(last insert id);
+     *               Collection: select
      */
     public function run(SQLInterface $SQL)
     {
@@ -197,7 +196,7 @@ class Model extends ContainerObject implements ModelInterface
      * @param PDO|\PDO     $PDO
      * @param SQLInterface $SQL
      *
-     * @return int|Collection
+     * @return array [int|Collection : result, int : errCode, string : errMSG]
      */
     protected function _runWithPDO(PDO $PDO, SQLInterface $SQL)
     {
@@ -209,52 +208,66 @@ class Model extends ContainerObject implements ModelInterface
             'null'    => \PDO::PARAM_NULL
         ];
         $naBind = $SQL->getBind();
-        switch ($iType = $SQL->getSQLType()) {
-            case SQLInterface::SQL_TYPE_SELECT:
-                if ($naBind === null) {
-                    $mSTMT = $PDO->query((string)$SQL);
-                    $aRS   = $mSTMT === false ? [] : $mSTMT->fetchAll(\PDO::FETCH_ASSOC);
-                } else {
-                    $mSTMT = $PDO->prepare((string)$SQL);
-                    if ($mSTMT) {
-                        foreach ($naBind as $sK => $mOne) {
-                            $sType = gettype($mOne);
-                            $mSTMT->bindValue($sK, $mOne, isset($aMapP[$sType]) ? $aMapP[$sType] : $aMapP[0]);
-                        }
-                    }
-                    $aRS = $mSTMT->execute() ? $mSTMT->fetchAll(\PDO::FETCH_ASSOC) : [];
-                }
-                $Obj = new Collection(
-                    $aRS,
-                    $this->sModelItem,
-                    $this
-                );
-                $Obj->__init__($this->_getContainer());
-                $Obj->buildData();
-                return $Obj;
-            case SQLInterface::SQL_TYPE_INSERT:
-            case SQLInterface::SQL_TYPE_UPDATE:
-            case SQLInterface::SQL_TYPE_DELETE:
-                if ($naBind === null) {
-                    $iEffectRows = $PDO->exec((string)$SQL);
-                } else {
-                    $mSTMT = $PDO->prepare((string)$SQL);
-                    if ($mSTMT) {
-                        foreach ($naBind as $sK => $mOne) {
-                            $sType = gettype($mOne);
-                            $mSTMT->bindValue($sK, $mOne, isset($aMapP[$sType]) ? $aMapP[$sType] : $aMapP[0]);
-                        }
-                        $iEffectRows = $mSTMT->execute();
+
+        $iErr = 0;
+        $sErr = '';
+        $mRS = null;
+
+        try {
+            switch ($iType = $SQL->getSQLType()) {
+                case SQLInterface::SQL_TYPE_SELECT:
+                    if ($naBind === null) {
+                        $mSTMT = $PDO->query((string)$SQL);
+                        $aRS   = $mSTMT === false ? [] : $mSTMT->fetchAll(\PDO::FETCH_ASSOC);
                     } else {
-                        $iEffectRows = 0;
+                        $mSTMT = $PDO->prepare((string)$SQL);
+                        if ($mSTMT) {
+                            foreach ($naBind as $sK => $mOne) {
+                                $sType = gettype($mOne);
+                                $mSTMT->bindValue($sK, $mOne, isset($aMapP[$sType]) ? $aMapP[$sType] : $aMapP[0]);
+                            }
+                        }
+                        $aRS = $mSTMT->execute() ? $mSTMT->fetchAll(\PDO::FETCH_ASSOC) : [];
                     }
-                }
-                return $iType === SQLInterface::SQL_TYPE_INSERT ?
-                    ($iEffectRows === 0 ? false : $PDO->lastInsertId()) :
-                    $iEffectRows;
-            default:
-                throw new \InvalidArgumentException();
+                    $Obj = new Collection(
+                        $aRS,
+                        $this->sModelItem,
+                        $this
+                    );
+                    $Obj->__init__($this->_getContainer());
+                    $Obj->buildData();
+                    $mRS = $Obj;
+                    break;
+                case SQLInterface::SQL_TYPE_INSERT:
+                case SQLInterface::SQL_TYPE_UPDATE:
+                case SQLInterface::SQL_TYPE_DELETE:
+                    if ($naBind === null) {
+                        $iEffectRows = $PDO->exec((string)$SQL);
+                    } else {
+                        $mSTMT = $PDO->prepare((string)$SQL);
+                        if ($mSTMT) {
+                            foreach ($naBind as $sK => $mOne) {
+                                $sType = gettype($mOne);
+                                $mSTMT->bindValue($sK, $mOne, isset($aMapP[$sType]) ? $aMapP[$sType] : $aMapP[0]);
+                            }
+                            $iEffectRows = $mSTMT->execute();
+                        } else {
+                            $iEffectRows = 0;
+                        }
+                    }
+                    $mRS = $iType === SQLInterface::SQL_TYPE_INSERT ?
+                        ($iEffectRows === 0 ? false : $PDO->lastInsertId()) :
+                        $iEffectRows;
+                    break;
+                default:
+                    throw new \InvalidArgumentException();
+            }
+        } catch (\PDOException $E) {
+            $iErr = $E->getCode();
+            $sErr = $E->getMessage();
         }
+
+        return [$mRS, $iErr, $sErr];
     }
 
     /**
