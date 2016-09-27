@@ -73,10 +73,6 @@ class Model extends ContainerObject implements ModelInterface
                 $aModelConfig['item_pre'] . $sModelName . $aModelConfig['item_post'];
         }
 
-        if (isset($aModelConfig['table_cb'])) {
-            $this->mTableCB = $aModelConfig['table_cb'];
-        }
-
         $this->ModelFactory = $ModelFactory;
     }
 
@@ -101,17 +97,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function getTable()
     {
-        return $this->mTableCB===null ?
-            $this->sTable :
-            call_user_func($this->mTableCB, $this->sTable);
-    }
-
-    /**
-     * @param mixed $mTableCB
-     */
-    public function setTableCB($mTableCB)
-    {
-        $this->mTableCB = $mTableCB;
+        return $this->sTable;
     }
 
     /**
