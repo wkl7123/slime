@@ -32,23 +32,36 @@ class PHPRedis extends ContainerObject
 
     public function __call($sMethod, $aArgv)
     {
-        $Redis = $this->getInst();
+        $iErr = 0;
+        $sErr = '';
+        $mRS  = null;
 
+        $Redis = $this->getInst();
         /** @var null|EventInterface $nEV */
         $nEV = $this->_getIfExist('Event');
-        if ($nEV !== null) {
-            $Local = new \ArrayObject();
-            $nEV->fire(RedisEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
-            if (!isset($Local['__RESULT__'])) {
+
+        try {
+            if ($nEV !== null) {
+                $Local = new \ArrayObject();
+                $nEV->fire(RedisEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
+                if (!isset($Local['__RESULT__'])) {
+                    $mRS                 = call_user_func_array([$Redis, $sMethod], $aArgv);
+                    $Local['__RESULT__'] = $mRS;
+                }
+                $nEV->fire(RedisEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
+                $mRS = $Local['__RESULT__'];
+            } else {
                 $mRS = call_user_func_array([$Redis, $sMethod], $aArgv);
-                $Local['__RESULT__'] = $mRS;
             }
-            $nEV->fire(RedisEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
-            $mRS = $Local['__RESULT__'];
-        } else {
-            $mRS = call_user_func_array([$Redis, $sMethod], $aArgv);
+        } catch (\RedisException $E) {
+            $iErr = $E->getCode();
+            $sErr = $E->getMessage();
+            if ($nEV) {
+                $nEV->fire(RedisEvent::EV_EXEC_EXCEPTION, [$E]);
+            }
         }
-        return $mRS;
+
+        return [$mRS, $iErr, $sErr];
     }
 
     /**
@@ -58,7 +71,8 @@ class PHPRedis extends ContainerObject
     {
         if ($this->nInst === null) {
             $Redis = new \Redis();
-            $Redis->connect((string)$this->aServerConf['host'], (int)$this->aServerConf['port'], $this->aServerConf['timeout']);
+            $Redis->connect((string)$this->aServerConf['host'], (int)$this->aServerConf['port'],
+                $this->aServerConf['timeout']);
             $Redis->setOption(\Redis::OPT_READ_TIMEOUT, $this->aOptionConf['read_timeout']);
             if (isset($this->aOptionConf['auth'])) {
                 $Redis->auth($this->aOptionConf['auth']);

@@ -2,6 +2,7 @@
 namespace Slime\Memcached;
 
 use Slime\Container\ContainerObject;
+use Slime\Redis\RedisEvent;
 use SlimeInterface\Event\EventInterface;
 
 /**
@@ -35,22 +36,36 @@ class Memcached extends ContainerObject
 
     public function __call($sMethod, $aArgv)
     {
+        $iErr = 0;
+        $sErr = '';
+        $mRS  = null;
+
         $MC = $this->getInst();
         /** @var null|EventInterface $nEV */
         $nEV = $this->_getIfExist('Event');
-        if ($nEV !== null) {
-            $Local = new \ArrayObject();
-            $nEV->fire(MemcachedEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
-            if (!isset($Local['__RESULT__'])) {
-                $mRS                 = call_user_func_array([$MC, $sMethod], $aArgv);
-                $Local['__RESULT__'] = $mRS;
+
+        try {
+            if ($nEV !== null) {
+                $Local = new \ArrayObject();
+                $nEV->fire(MemcachedEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
+                if (!isset($Local['__RESULT__'])) {
+                    $mRS                 = call_user_func_array([$MC, $sMethod], $aArgv);
+                    $Local['__RESULT__'] = $mRS;
+                }
+                $nEV->fire(MemcachedEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
+                $mRS = $Local['__RESULT__'];
+            } else {
+                $mRS = call_user_func_array([$MC, $sMethod], $aArgv);
             }
-            $nEV->fire(MemcachedEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
-            $mRS = $Local['__RESULT__'];
-        } else {
-            $mRS = call_user_func_array([$MC, $sMethod], $aArgv);
+        } catch (\MemcachedException $E) {
+            $iErr = $E->getCode();
+            $sErr = $E->getMessage();
+            if ($nEV) {
+                $nEV->fire(MemcachedEvent::EV_EXEC_EXCEPTION, [$E]);
+            }
         }
-        return $mRS;
+
+        return [$mRS, $iErr, $sErr];
     }
 
     /**
