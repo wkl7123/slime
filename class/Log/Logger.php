@@ -100,7 +100,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function emergency($sMessage, array $aContext = [])
     {
@@ -115,7 +115,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function alert($sMessage, array $aContext = [])
     {
@@ -129,7 +129,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function critical($sMessage, array $aContext = [])
     {
@@ -143,7 +143,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function error($sMessage, array $aContext = [])
     {
@@ -158,7 +158,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function warning($sMessage, array $aContext = [])
     {
@@ -171,7 +171,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function notice($sMessage, array $aContext = [])
     {
@@ -185,7 +185,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function info($sMessage, array $aContext = [])
     {
@@ -198,7 +198,7 @@ class Logger extends ContainerObject implements LoggerInterface
      * @param string $sMessage
      * @param array  $aContext
      *
-     * @return null
+     * @return void
      */
     public function debug($sMessage, array $aContext = [])
     {
@@ -223,9 +223,9 @@ class Logger extends ContainerObject implements LoggerInterface
         if (is_array($sMessage)) {
             $aTidy = [];
             foreach ($sMessage as $sK => $sV) {
-                $aTidy[] = sprintf('%s : %s', $sK, $sV);
+                $aTidy[] = sprintf('%s:%s', $sK, $sV);
             }
-            $sMessage = implode(' | ', $aTidy);
+            $sMessage = implode('|', $aTidy);
         }
 
         $sMessage = self::interpolate($sMessage, $aContext);
