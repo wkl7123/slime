@@ -270,7 +270,7 @@ class Model extends ContainerObject implements ModelInterface
             /** @var EventInterface $nEvent */
             $nEvent = $this->_getIfExist('Event');
             if ($nEvent !== null) {
-                $nEvent->fire(self::EV_QUERY_EXCEPTION, [$E]);
+                $nEvent->fire(self::EV_QUERY_EXCEPTION, [$E, $this->_getContainer()]);
             }
         }
 

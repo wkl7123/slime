@@ -61,7 +61,7 @@ class Memcached extends ContainerObject
             $iErr = $E->getCode();
             $sErr = $E->getMessage();
             if ($nEV) {
-                $nEV->fire(MemcachedEvent::EV_EXEC_EXCEPTION, [$E]);
+                $nEV->fire(MemcachedEvent::EV_EXEC_EXCEPTION, [$E, $this->_getContainer()]);
             }
         }
 

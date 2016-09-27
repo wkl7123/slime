@@ -57,7 +57,7 @@ class PHPRedis extends ContainerObject
             $iErr = $E->getCode();
             $sErr = $E->getMessage();
             if ($nEV) {
-                $nEV->fire(RedisEvent::EV_EXEC_EXCEPTION, [$E]);
+                $nEV->fire(RedisEvent::EV_EXEC_EXCEPTION, [$E, $this->_getContainer()]);
             }
         }
 
