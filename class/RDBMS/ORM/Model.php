@@ -48,6 +48,9 @@ class Model extends ContainerObject implements ModelInterface
     /** @var ModelFactoryInterface */
     protected $ModelFactory;
 
+    /** @var mixed */
+    protected $mTableCB = null;
+
     public function __construct(
         $sModelName,
         array $aModelConfig,
@@ -68,6 +71,10 @@ class Model extends ContainerObject implements ModelInterface
             $this->sModelItem =
                 $aModelConfig['namespace'] . "\\" .
                 $aModelConfig['item_pre'] . $sModelName . $aModelConfig['item_post'];
+        }
+
+        if (isset($aModelConfig['table_cb'])) {
+            $this->mTableCB = $aModelConfig['table_cb'];
         }
 
         $this->ModelFactory = $ModelFactory;
@@ -94,7 +101,17 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function getTable()
     {
-        return $this->sTable;
+        return $this->mTableCB===null ?
+            $this->sTable :
+            call_user_func($this->mTableCB, $this->sTable);
+    }
+
+    /**
+     * @param mixed $mTableCB
+     */
+    public function setTableCB($mTableCB)
+    {
+        $this->mTableCB = $mTableCB;
     }
 
     /**
@@ -106,7 +123,7 @@ class Model extends ContainerObject implements ModelInterface
     {
         return count(
             $Col = $this->SQLFactory->select()
-                ->table($this->sTable)
+                ->table($this->getTable())
                 ->where(Condition::asAnd()->eq($this->sPK, $mPK))
                 ->limit(1)
                 ->run()
@@ -118,7 +135,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function findAll()
     {
-        return $this->SQLFactory->select()->table($this->sTable)->run();
+        return $this->SQLFactory->select()->table($this->getTable())->run();
     }
 
     /**
@@ -136,7 +153,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function select()
     {
-        return $this->SQLFactory->select()->table($this->sTable);
+        return $this->SQLFactory->select()->table($this->getTable());
     }
 
     /**
@@ -144,7 +161,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function update()
     {
-        return $this->SQLFactory->update()->table($this->sTable);
+        return $this->SQLFactory->update()->table($this->getTable());
     }
 
     /**
@@ -152,7 +169,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function insert()
     {
-        return $this->SQLFactory->insert()->table($this->sTable);
+        return $this->SQLFactory->insert()->table($this->getTable());
     }
 
     /**
@@ -160,7 +177,7 @@ class Model extends ContainerObject implements ModelInterface
      */
     public function delete()
     {
-        return $this->SQLFactory->delete()->table($this->sTable);
+        return $this->SQLFactory->delete()->table($this->getTable());
     }
 
     /**
@@ -282,7 +299,7 @@ class Model extends ContainerObject implements ModelInterface
             $PDO->query('commit');
         } catch (\PDOException $E) {
             $iErr = -1;
-            var_dump($E->getMessage());
+            //var_dump($E->getMessage());
             $PDO->query('rollback');
         }
         return $iErr;
