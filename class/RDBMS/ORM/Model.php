@@ -2,6 +2,7 @@
 namespace Slime\RDBMS\ORM;
 
 use Slime\Container\ContainerObject;
+use Slime\RDBMS\ORM\Engine\RDBEvent;
 use SlimeInterface\Event\EventInterface;
 use SlimeInterface\RDBMS\ORM\Engine\EnginePoolInterface;
 use SlimeInterface\RDBMS\ORM\ModelFactoryInterface;
@@ -23,8 +24,6 @@ use Slime\RDBMS\ORM\Engine\PDO;
  */
 class Model extends ContainerObject implements ModelInterface
 {
-    const EV_QUERY_EXCEPTION = 'slime::rdbms::orm::model::query_exception';
-
     /** @var SQLFactory */
     protected $SQLFactory;
 
@@ -290,7 +289,7 @@ class Model extends ContainerObject implements ModelInterface
             /** @var EventInterface $nEvent */
             $nEvent = $this->_getIfExist('Event');
             if ($nEvent !== null) {
-                $nEvent->fire(self::EV_QUERY_EXCEPTION, [$E, $this->_getContainer()]);
+                $nEvent->fire(RDBEvent::EV_QUERY_EXCEPTION, [$E, $this->_getContainer()]);
             }
         }
 

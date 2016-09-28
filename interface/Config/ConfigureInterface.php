@@ -3,5 +3,17 @@ namespace SlimeInterface\Config;
 
 interface ConfigureInterface extends \ArrayAccess
 {
-    public function load();
+    /**
+     * @param string $sDir
+     *
+     * @return void
+     */
+    public function loadDir($sDir);
+
+    /**
+     * @param string $sFile
+     *
+     * @return void
+     */
+    public function loadFile($sFile);
 }

@@ -8,4 +8,6 @@ class RDBEvent
 
     const EV_BEFORE_STMT_RUN = 'slime:rdb:engine:stmt_run_before';
     const EV_AFTER_STMT_RUN  = 'slime:rdb:engine:stmt_run_after';
+
+    const EV_QUERY_EXCEPTION = 'slime::rdb::engine::query_exception';
 }
