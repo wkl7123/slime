@@ -284,7 +284,7 @@ class Model extends ContainerObject implements ModelInterface
                     throw new \InvalidArgumentException();
             }
         } catch (\PDOException $E) {
-            $iErr = $E->getCode();
+            $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
             $sErr = $E->getMessage();
             /** @var EventInterface $nEvent */
             $nEvent = $this->_getIfExist('Event');

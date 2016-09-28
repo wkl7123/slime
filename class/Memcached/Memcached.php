@@ -58,7 +58,7 @@ class Memcached extends ContainerObject
                 $mRS = call_user_func_array([$MC, $sMethod], $aArgv);
             }
         } catch (\MemcachedException $E) {
-            $iErr = $E->getCode();
+            $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
             $sErr = $E->getMessage();
             if ($nEV) {
                 $nEV->fire(MemcachedEvent::EV_EXEC_EXCEPTION, [$E, $this->_getContainer()]);
