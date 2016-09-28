@@ -5,6 +5,8 @@ Trait ConfigureTrait
 {
     protected $aData;
 
+    public function __construct(){}
+
     /**
      * Whether a offset exists
      *
