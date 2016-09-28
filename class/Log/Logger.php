@@ -50,21 +50,31 @@ class Logger extends ContainerObject implements LoggerInterface
 
     /**
      * @param int      $iLogLevel
-     * @param null     $sRequestID
+     * @param null     $nsRequestID
      * @param null|int $niLimit
      */
     public function __construct(
         $iLogLevel = self::LEVEL_ALL,
-        $sRequestID = null,
+        $nsRequestID = null,
         $niLimit = null
     ) {
         $this->iLogLevel = $iLogLevel;
-        $this->sGUID     = base_convert(rand(10, 99) . str_replace('.', '', round(microtime(true), 4)), 10, 32);
+        $this->setGUID($nsRequestID);
 
         // limit:5   message:abcdefg  result:ab...
         if (is_int($niLimit) && ($niLimit > 3)) {
             $this->niLimit = $niLimit - 3;
         }
+    }
+
+    /**
+     * @param null|string $nsGUID : null means auto generate
+     */
+    public function setGUID($nsGUID = null)
+    {
+        $this->sGUID = $nsGUID === null ?
+            base_convert(rand(10, 99) . str_replace('.', '', round(microtime(true), 4)), 10, 32) :
+            $nsGUID;
     }
 
     /**
