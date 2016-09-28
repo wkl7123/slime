@@ -20,6 +20,9 @@ class PHPConfAdaptor extends ContainerObject implements ConfigureInterface
             goto END;
         }
         while (($sFileName = readdir($rDir)) !== false) {
+            if (ltrim($sFileName, '.') === '') {
+                continue;
+            }
             $this->aData = array_merge($this->aData, (require $sDir . DIRECTORY_SEPARATOR . $sFileName));
         }
 

@@ -20,6 +20,9 @@ class JsonConfAdaptor extends ContainerObject implements ConfigureInterface
             goto END;
         }
         while (($sFileName = readdir($rDir)) !== false) {
+            if (ltrim($sFileName, '.') === '') {
+                continue;
+            }
             $this->aData = array_merge(
                 $this->aData,
                 json_decode(file_get_contents($sDir . DIRECTORY_SEPARATOR . $sFileName), true)
