@@ -3,7 +3,7 @@ namespace Slime\Config;
 
 Trait ConfigureTrait
 {
-    protected $aData;
+    protected $aData = [];
 
     public function __construct(){}
 
