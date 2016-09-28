@@ -69,8 +69,8 @@ class Model extends ContainerObject implements ModelInterface
             $sFullClass      = get_called_class();
             $biPos           = strrpos($sFullClass, '\\');
             $this->sTable    = $biPos === false ? $sFullClass : substr($sFullClass, $biPos + 1);
-            $this->sOrgTable = $this->sTable;
         }
+        $this->sOrgTable = $this->sTable;
         if (!$this->sFK) {
             $this->sFK = $this->sTable . '_id';
         }
@@ -88,6 +88,9 @@ class Model extends ContainerObject implements ModelInterface
     {
     }
 
+    /**
+     * @return $this
+     */
     public function cbForTableName()
     {
         if ($this->mTableCB) {
@@ -95,6 +98,7 @@ class Model extends ContainerObject implements ModelInterface
             array_unshift($aParam, $this->sOrgTable);
             $this->sTable = call_user_func_array($this->mTableCB, $aParam);
         }
+        return $this;
     }
 
     /**
