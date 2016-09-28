@@ -33,8 +33,13 @@ class Model extends ContainerObject implements ModelInterface
 
     /** @var string */
     protected $sTable;
+
+    /** @var string */
+    protected $sOrgTable;
+
     /** @var string */
     protected $sPK = 'id';
+
     /** @var string */
     protected $sFK;
 
@@ -62,9 +67,10 @@ class Model extends ContainerObject implements ModelInterface
         $this->EnginePool = $EnginePool;
         $this->SQLFactory = SQLFactory::create($this->iSQLType, $this);
         if (!$this->sTable) {
-            $sFullClass   = get_called_class();
-            $biPos        = strrpos($sFullClass, '\\');
-            $this->sTable = $biPos === false ? $sFullClass : substr($sFullClass, $biPos + 1);
+            $sFullClass      = get_called_class();
+            $biPos           = strrpos($sFullClass, '\\');
+            $this->sTable    = $biPos === false ? $sFullClass : substr($sFullClass, $biPos + 1);
+            $this->sOrgTable = $this->sTable;
         }
         if (!$this->sFK) {
             $this->sFK = $this->sTable . '_id';
@@ -76,6 +82,20 @@ class Model extends ContainerObject implements ModelInterface
         }
 
         $this->ModelFactory = $ModelFactory;
+        $this->setTableNameCB();
+    }
+
+    protected function setTableNameCB()
+    {
+    }
+
+    public function cbForTableName()
+    {
+        if ($this->mTableCB) {
+            $aParam = func_get_args();
+            array_unshift($aParam, $this->sOrgTable);
+            $this->sTable = call_user_func_array($this->mTableCB, $aParam);
+        }
     }
 
     /**
@@ -213,7 +233,7 @@ class Model extends ContainerObject implements ModelInterface
 
         $iErr = 0;
         $sErr = '';
-        $mRS = null;
+        $mRS  = null;
 
         try {
             switch ($iType = $SQL->getSQLType()) {
