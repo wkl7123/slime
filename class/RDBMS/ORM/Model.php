@@ -297,7 +297,7 @@ class Model extends ContainerObject implements ModelInterface
             }
         }
 
-        return [$mRS, $iErr, $sErr];
+        return [$iErr, $sErr, $mRS];
     }
 
     /**

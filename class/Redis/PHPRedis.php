@@ -61,7 +61,7 @@ class PHPRedis extends ContainerObject
             }
         }
 
-        return [$mRS, $iErr, $sErr];
+        return [$iErr, $sErr, $mRS];
     }
 
     /**
