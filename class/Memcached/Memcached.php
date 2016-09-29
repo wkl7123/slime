@@ -63,8 +63,14 @@ class Memcached extends ContainerObject
                 $nEV->fire(
                     MemcachedEvent::EV_EXEC_ERROR,
                     [
-                        ['code' => $iErr, 'msg' => $sErr],
-                        ['obj' => $this, 'method' => $sMethod, 'argv' => $aArgv, 'local' => $Local],
+                        [
+                            'obj'    => $this,
+                            'method' => $sMethod,
+                            'argv'   => $aArgv,
+                            'local'  => $Local,
+                            'code'   => $iErr,
+                            'msg'    => $sErr
+                        ],
                         $this->_getContainer()
                     ]
                 );

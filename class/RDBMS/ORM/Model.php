@@ -67,9 +67,9 @@ class Model extends ContainerObject implements ModelInterface
         $this->EnginePool = $EnginePool;
         $this->SQLFactory = SQLFactory::create($this->iSQLType, $this);
         if (!$this->sTable) {
-            $sFullClass      = get_called_class();
-            $biPos           = strrpos($sFullClass, '\\');
-            $this->sTable    = $biPos === false ? $sFullClass : substr($sFullClass, $biPos + 1);
+            $sFullClass   = get_called_class();
+            $biPos        = strrpos($sFullClass, '\\');
+            $this->sTable = $biPos === false ? $sFullClass : substr($sFullClass, $biPos + 1);
         }
         $this->sOrgTable = $this->sTable;
         if (!$this->sFK) {
@@ -304,8 +304,12 @@ class Model extends ContainerObject implements ModelInterface
                 $nEvent->fire(
                     RDBEvent::EV_QUERY_EXCEPTION,
                     [
-                        $E,
-                        ['obj' => $this, 'method' => __FUNCTION__, 'argv' => func_get_args(), 'local' => null],
+                        [
+                            'obj'    => $this,
+                            'method' => __FUNCTION__,
+                            'argv'   => func_get_args(),
+                            'E'      => $E
+                        ],
                         $this->_getContainer()
                     ]
                 );

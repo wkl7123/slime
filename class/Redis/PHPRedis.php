@@ -60,8 +60,13 @@ class PHPRedis extends ContainerObject
                 $nEV->fire(
                     RedisEvent::EV_EXEC_EXCEPTION,
                     [
-                        $E,
-                        ['obj' => $this, 'method' => $sMethod, 'argv' => $aArgv, 'local' => $Local],
+                        [
+                            'obj'    => $this,
+                            'method' => $sMethod,
+                            'argv'   => $aArgv,
+                            'local'  => $Local,
+                            'E'      => $E
+                        ],
                         $this->_getContainer()
                     ]
                 );
