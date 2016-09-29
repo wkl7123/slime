@@ -56,4 +56,12 @@ class PDO extends ContainerObject
 
         return $this->nInst;
     }
+
+    /**
+     * @return void
+     */
+    public function releaseConn()
+    {
+        $this->nInst = null;
+    }
 }

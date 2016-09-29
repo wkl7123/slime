@@ -297,7 +297,7 @@ class Model extends ContainerObject implements ModelInterface
             /** @var EventInterface $nEvent */
             $nEvent = $this->_getIfExist('Event');
             if ($nEvent !== null) {
-                $nEvent->fire(RDBEvent::EV_QUERY_EXCEPTION, [$E, $this->_getContainer()]);
+                $nEvent->fire(RDBEvent::EV_QUERY_EXCEPTION, [$E, $this->_getContainer(), $PDO]);
             }
         }
 
