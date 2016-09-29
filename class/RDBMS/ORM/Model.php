@@ -4,6 +4,7 @@ namespace Slime\RDBMS\ORM;
 use Slime\Container\ContainerObject;
 use Slime\RDBMS\ORM\Engine\RDBEvent;
 use SlimeInterface\Event\EventInterface;
+use SlimeInterface\RDBMS\ORM\CollectionInterface;
 use SlimeInterface\RDBMS\ORM\Engine\EnginePoolInterface;
 use SlimeInterface\RDBMS\ORM\ModelFactoryInterface;
 use SlimeInterface\RDBMS\ORM\ModelInterface;
@@ -128,17 +129,19 @@ class Model extends ContainerObject implements ModelInterface
     /**
      * @param $mPK
      *
-     * @return Item|null
+     * @return array [0:int<errCode>, 1:string<errMsg>, 3:Item|null<data>]
      */
     public function findByPK($mPK)
     {
-        return count(
-            $Col = $this->SQLFactory->select()
-                ->table($this->getTable())
-                ->where(Condition::asAnd()->eq($this->sPK, $mPK))
-                ->limit(1)
-                ->run()
-        ) === 0 ? null : $Col->current();
+        /** @var CollectionInterface $Col */
+        list($iErr, $sErr, $Col) = $this->SQLFactory->select()
+            ->table($this->getTable())
+            ->where(Condition::asAnd()->eq($this->sPK, $mPK))
+            ->limit(1)
+            ->run();
+
+        return [$iErr, $sErr, $Col->isEmpty() ? null : $Col->current()];
+        //) === 0 ? null : $Col->current();
     }
 
     /**
@@ -194,10 +197,7 @@ class Model extends ContainerObject implements ModelInterface
     /**
      * @param SQLInterface $SQL
      *
-     * @return array [int|CollectionInterface|string : result, int : errCode, string : errMsg]
-     *               int: update/delete(effect rows);
-     *               string: insert(last insert id);
-     *               Collection: select
+     * @return array [0:int<errCode>, 1:string<errMsg>, 3:mixed<data>]
      */
     public function run(SQLInterface $SQL)
     {
