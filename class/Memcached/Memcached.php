@@ -2,7 +2,6 @@
 namespace Slime\Memcached;
 
 use Slime\Container\ContainerObject;
-use Slime\Redis\RedisEvent;
 use SlimeInterface\Event\EventInterface;
 
 /**
@@ -44,24 +43,36 @@ class Memcached extends ContainerObject
         /** @var null|EventInterface $nEV */
         $nEV = $this->_getIfExist('Event');
 
-        try {
-            if ($nEV !== null) {
-                $Local = new \ArrayObject();
-                $nEV->fire(MemcachedEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
-                if (!isset($Local['__RESULT__'])) {
-                    $mRS                 = call_user_func_array([$MC, $sMethod], $aArgv);
-                    $Local['__RESULT__'] = $mRS;
-                }
-                $nEV->fire(MemcachedEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
-                $mRS = $Local['__RESULT__'];
-            } else {
-                $mRS = call_user_func_array([$MC, $sMethod], $aArgv);
+        if ($nEV !== null) {
+            $Local = new \ArrayObject();
+            $nEV->fire(MemcachedEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
+            if (!isset($Local['__RESULT__'])) {
+                $mRS                 = call_user_func_array([$MC, $sMethod], $aArgv);
+                $Local['__RESULT__'] = $mRS;
             }
-        } catch (\MemcachedException $E) {
-            $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
-            $sErr = $E->getMessage();
+            $nEV->fire(MemcachedEvent::EV_AFTER_EXEC, [$sMethod, $aArgv, $Local]);
+            $mRS = $Local['__RESULT__'];
+        } else {
+            $mRS = call_user_func_array([$MC, $sMethod], $aArgv);
+        }
+        if ($mRS === false) {
+            $iErr = $MC->getResultCode();
+            $sErr = $MC->getResultMessage();
+
             if ($nEV) {
-                $nEV->fire(MemcachedEvent::EV_EXEC_EXCEPTION, [$E, $this->_getContainer(), $this]);
+                $nEV->fire(
+                    MemcachedEvent::EV_EXEC_ERROR,
+                    [
+                        ['code' => $iErr, 'msg' => $sErr],
+                        ['obj' => $this, 'method' => $sMethod, 'argv' => $aArgv, 'local' => $Local],
+                        $this->_getContainer()
+                    ]
+                );
+            }
+
+            if ($iErr == 47) {
+                $this->releaseConn();
+                return call_user_func_array([$this, $sMethod], $aArgv);
             }
         }
 

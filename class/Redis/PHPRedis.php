@@ -12,7 +12,7 @@ use SlimeInterface\Event\EventInterface;
 class PHPRedis extends ContainerObject
 {
     protected static $aDefaultOptionConf = [
-        'read_timeout' => 3,
+        'read_timeout' => 3
     ];
 
     /** @var array */
@@ -57,7 +57,19 @@ class PHPRedis extends ContainerObject
             $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
             $sErr = $E->getMessage();
             if ($nEV) {
-                $nEV->fire(RedisEvent::EV_EXEC_EXCEPTION, [$E, $this->_getContainer(), $this]);
+                $nEV->fire(
+                    RedisEvent::EV_EXEC_EXCEPTION,
+                    [
+                        $E,
+                        ['obj' => $this, 'method' => $sMethod, 'argv' => $aArgv, 'local' => $Local],
+                        $this->_getContainer()
+                    ]
+                );
+            }
+
+            if ($E->getMessage() === 'Redis server went away') {
+                $this->releaseConn();
+                return call_user_func_array([$this, $sMethod], $aArgv);
             }
         }
 

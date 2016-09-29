@@ -225,9 +225,9 @@ class Model extends ContainerObject implements ModelInterface
      * @param PDO|\PDO     $PDO
      * @param SQLInterface $SQL
      *
-     * @return array [int|Collection : result, int : errCode, string : errMSG]
+     * @return array [0:int<errCode>, 1:string<errMsg>, 3:mixed<data>]
      */
-    protected function _runWithPDO(PDO $PDO, SQLInterface $SQL)
+    public function _runWithPDO(PDO $PDO, SQLInterface $SQL)
     {
         static $aMapP = [
             0         => \PDO::PARAM_STR,
@@ -292,12 +292,27 @@ class Model extends ContainerObject implements ModelInterface
                     throw new \InvalidArgumentException();
             }
         } catch (\PDOException $E) {
+            $iErr = $PDO->errorCode();
+            $sErr = $PDO->errorInfo();
+            /*
             $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
             $sErr = $E->getMessage();
+            */
             /** @var EventInterface $nEvent */
             $nEvent = $this->_getIfExist('Event');
             if ($nEvent !== null) {
-                $nEvent->fire(RDBEvent::EV_QUERY_EXCEPTION, [$E, $this->_getContainer(), $PDO]);
+                $nEvent->fire(
+                    RDBEvent::EV_QUERY_EXCEPTION,
+                    [
+                        $E,
+                        ['obj' => $this, 'method' => __FUNCTION__, 'argv' => func_get_args(), 'local' => null],
+                        $this->_getContainer()
+                    ]
+                );
+            }
+            if ($iErr == 2006 || $iErr == 2013) {
+                $PDO->releaseConn();
+                return call_user_func_array([$this, '_runWithPDO'], [$PDO, $SQL]);
             }
         }
 
