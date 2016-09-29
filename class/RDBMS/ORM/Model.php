@@ -292,33 +292,54 @@ class Model extends ContainerObject implements ModelInterface
                     throw new \InvalidArgumentException();
             }
         } catch (\PDOException $E) {
-            $iErr = $PDO->errorCode();
-            $sErr = $PDO->errorInfo();
-            /*
-            $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
-            $sErr = $E->getMessage();
-            */
-            /** @var EventInterface $nEvent */
-            $nEvent = $this->_getIfExist('Event');
-            if ($nEvent !== null) {
-                $nEvent->fire(
-                    RDBEvent::EV_QUERY_EXCEPTION,
-                    [
+            try {
+                $iErr = $PDO->errorCode();
+                $sErr = $PDO->errorInfo();
+                /*
+                $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
+                $sErr = $E->getMessage();
+                */
+                /** @var EventInterface $nEvent */
+                $nEvent = $this->_getIfExist('Event');
+                if ($nEvent !== null) {
+                    $nEvent->fire(
+                        RDBEvent::EV_QUERY_EXCEPTION,
                         [
-                            'obj'    => $this,
-                            'method' => __FUNCTION__,
-                            'argv'   => func_get_args(),
-                            'code'   => $iErr,
-                            'msg'    => $sErr,
-                            'E'      => $E
-                        ],
-                        $this->_getContainer()
-                    ]
-                );
-            }
-            if ($iErr == 2006 || $iErr == 2013) {
-                $PDO->releaseConn();
-                return call_user_func_array([$this, '_runWithPDO'], [$PDO, $SQL]);
+                            [
+                                'obj'    => $this,
+                                'method' => __FUNCTION__,
+                                'argv'   => func_get_args(),
+                                'code'   => $iErr,
+                                'msg'    => $sErr,
+                                'E'      => $E
+                            ],
+                            $this->_getContainer()
+                        ]
+                    );
+                }
+                if ($iErr == 2006 || $iErr == 2013) {
+                    $PDO->releaseConn();
+                    return call_user_func_array([$this, '_runWithPDO'], [$PDO, $SQL]);
+                }
+            } catch (\PDOException $E) {
+                /** @var EventInterface $nEvent */
+                $nEvent = $this->_getIfExist('Event');
+                if ($nEvent !== null) {
+                    $nEvent->fire(
+                        RDBEvent::EV_QUERY_EXCEPTION,
+                        [
+                            [
+                                'obj'    => $this,
+                                'method' => __FUNCTION__,
+                                'argv'   => func_get_args(),
+                                'code'   => $E->getCode(),
+                                'msg'    => $E->getMessage(),
+                                'E'      => $E
+                            ],
+                            $this->_getContainer()
+                        ]
+                    );
+                }
             }
         }
 
