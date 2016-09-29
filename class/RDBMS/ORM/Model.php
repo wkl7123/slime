@@ -308,6 +308,8 @@ class Model extends ContainerObject implements ModelInterface
                             'obj'    => $this,
                             'method' => __FUNCTION__,
                             'argv'   => func_get_args(),
+                            'code'   => $iErr,
+                            'msg'    => $sErr,
                             'E'      => $E
                         ],
                         $this->_getContainer()

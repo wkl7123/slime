@@ -65,7 +65,9 @@ class PHPRedis extends ContainerObject
                             'method' => $sMethod,
                             'argv'   => $aArgv,
                             'local'  => $Local,
-                            'E'      => $E
+                            'code'   => $iErr,
+                            'msg'    => $sErr,
+                            'E'      => $E,
                         ],
                         $this->_getContainer()
                     ]
