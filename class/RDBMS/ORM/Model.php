@@ -140,7 +140,11 @@ class Model extends ContainerObject implements ModelInterface
             ->limit(1)
             ->run();
 
-        return [$iErr, $sErr, $Col->isEmpty() ? null : $Col->current()];
+        return [
+            $iErr,
+            $sErr,
+            ($Col === null ? null : ($Col->isEmpty() ? null : $Col->current()))
+        ];
         //) === 0 ? null : $Col->current();
     }
 
