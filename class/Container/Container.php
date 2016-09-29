@@ -10,7 +10,6 @@ class Container implements ContainerInterface, \ArrayAccess
 {
     protected $aCB;
     protected $aData;
-    protected $aDataMarked;
 
     /**
      * @param array $aConf
@@ -25,6 +24,19 @@ class Container implements ContainerInterface, \ArrayAccess
         }
 
         return $Obj;
+    }
+
+    /**
+     * @param string $sKey1
+     * ....
+     */
+    public function clearObj($sKey1)
+    {
+        foreach (func_get_args() as $sKey) {
+            if (isset($this->aData[$sKey])) {
+                unset($this->aData[$sKey]);
+            }
+        }
     }
 
     public function __get($sName)
@@ -48,15 +60,13 @@ class Container implements ContainerInterface, \ArrayAccess
             if (!isset($this->aCB[$id])) {
                 throw new NotFoundException();
             }
-            $this->aData[$id] = $mV = call_user_func($this->aCB[$id], $this);
-        } else {
-            $mV = $this->aData[$id];
-        }
-        if (!isset($this->aDataMarked[$id])) {
+            $mV = call_user_func($this->aCB[$id], $this);
             if ($mV instanceof ContainerObject) {
                 $mV->__init__($this);
             }
-            $this->aDataMarked[$id] = true;
+            $this->aData[$id] = $mV;
+        } else {
+            $mV = $this->aData[$id];
         }
 
         return $mV;
