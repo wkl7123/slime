@@ -294,7 +294,7 @@ class Model extends ContainerObject implements ModelInterface
         } catch (\PDOException $E) {
             try {
                 $iErr = $PDO->errorCode();
-                $sErr = $PDO->errorInfo();
+                $sErr = json_encode($PDO->errorInfo());
                 /*
                 $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
                 $sErr = $E->getMessage();
