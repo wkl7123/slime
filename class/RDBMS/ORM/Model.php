@@ -324,7 +324,6 @@ class Model extends ContainerObject implements ModelInterface
             } catch (\PDOException $E) {
                 /** @var EventInterface $nEvent */
                 $nEvent = $this->_getIfExist('Event');
-                $EPre   = $E->getPrevious();
                 if ($nEvent !== null) {
                     $nEvent->fire(
                         RDBEvent::EV_QUERY_EXCEPTION,
@@ -333,9 +332,9 @@ class Model extends ContainerObject implements ModelInterface
                                 'obj'      => $this,
                                 'method'   => __FUNCTION__,
                                 'argv'     => func_get_args(),
-                                'code'     => $EPre->getCode(),
-                                'msg'      => $EPre->getMessage(),
-                                'E'        => $EPre,
+                                'code'     => $E->getCode(),
+                                'msg'      => $E->getMessage(),
+                                'E'        => $E,
                                 'ECurrent' => $E
                             ],
                             $this->_getContainer()
