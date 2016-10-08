@@ -335,7 +335,6 @@ class Model extends ContainerObject implements ModelInterface
                                 'code'     => $E->getCode(),
                                 'msg'      => $E->getMessage(),
                                 'E'        => $E,
-                                'ECurrent' => $E
                             ],
                             $this->_getContainer()
                         ]
