@@ -37,4 +37,9 @@ class PDOPool extends ContainerObject implements EnginePoolInterface
         }
         return $this->aPDO[$sExpectKey];
     }
+
+    public function getAllInst()
+    {
+        return $this->aPDO;
+    }
 }
