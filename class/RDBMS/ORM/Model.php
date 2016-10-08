@@ -293,8 +293,9 @@ class Model extends ContainerObject implements ModelInterface
             }
         } catch (\PDOException $E) {
             try {
-                $iErr = $PDO->errorCode();
-                $sErr = json_encode($PDO->errorInfo());
+                $iErr     = $PDO->errorCode();
+                $aErrInfo = $PDO->errorInfo();
+                $sErr     = json_encode($aErrInfo);
                 /*
                 $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
                 $sErr = $E->getMessage();
@@ -317,8 +318,23 @@ class Model extends ContainerObject implements ModelInterface
                         ]
                     );
                 }
-                if ($iErr == 2006 || $iErr == 2013) {
+                if (isset($aErrInfo[1]) && ($aErrInfo[1] == 2006 || $aErrInfo[1] == 2013)) {
                     $PDO->releaseConn();
+                    if ($nEvent !== null) {
+                        $nEvent->fire(
+                            RDBEvent::EV_QUERY_RETRY,
+                            [
+                                [
+                                    'obj'      => $this,
+                                    'method'   => __FUNCTION__,
+                                    'argv'     => func_get_args(),
+                                    'pdo'      => $PDO,
+                                    'sql'      => $SQL
+                                ],
+                                $this->_getContainer()
+                            ]
+                        );
+                    }
                     return call_user_func_array([$this, '_runWithPDO'], [$PDO, $SQL]);
                 }
             } catch (\PDOException $E) {
