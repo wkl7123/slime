@@ -75,7 +75,7 @@ class ModelFactory extends ContainerObject implements ModelFactoryInterface
     /**
      * @return EnginePoolInterface
      */
-    protected function getEnginePool()
+    public function getEnginePool()
     {
         if ($this->nEnginePool === null) {
             $Obj = new $this->aEngineConf['engine_pool_class']($this->aEngineConf['engine_pool_config']);

@@ -14,4 +14,9 @@ interface EnginePoolInterface
      * @return mixed
      */
     public function getInst($sExpectKey, ModelInterface $Model, $m_sSQL_SQL);
+
+    /**
+     * @return array
+     */
+    public function getAllInst();
 }
