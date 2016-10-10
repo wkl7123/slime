@@ -36,11 +36,11 @@ class PHPRedis extends ContainerObject
         $sErr = '';
         $mRS  = null;
 
-        $Redis = $this->getInst();
         /** @var null|EventInterface $nEV */
         $nEV = $this->_getIfExist('Event');
 
         try {
+            $Redis = $this->getInst();
             if ($nEV !== null) {
                 $Local = new \ArrayObject();
                 $nEV->fire(RedisEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
