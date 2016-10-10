@@ -36,13 +36,12 @@ class PHPRedis extends ContainerObject
         $sErr = '';
         $mRS  = null;
 
+        $Local = new \ArrayObject();
         /** @var null|EventInterface $nEV */
-        $nEV = $this->_getIfExist('Event');
-
-        try {
+        $nEV   = $this->_getIfExist('Event');
+        $cbRun = function () use ($sMethod, $aArgv, $nEV, $Local) {
             $Redis = $this->getInst();
             if ($nEV !== null) {
-                $Local = new \ArrayObject();
                 $nEV->fire(RedisEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
                 if (!isset($Local['__RESULT__'])) {
                     $mRS                 = call_user_func_array([$Redis, $sMethod], $aArgv);
@@ -53,31 +52,55 @@ class PHPRedis extends ContainerObject
             } else {
                 $mRS = call_user_func_array([$Redis, $sMethod], $aArgv);
             }
-        } catch (\RedisException $E) {
-            $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
-            $sErr = $E->getMessage();
-            if ($nEV) {
-                $nEV->fire(
-                    RedisEvent::EV_EXEC_EXCEPTION,
-                    [
-                        [
-                            'obj'    => $this,
-                            'method' => $sMethod,
-                            'argv'   => $aArgv,
-                            'local'  => $Local,
-                            'code'   => $iErr,
-                            'msg'    => $sErr,
-                            'E'      => $E,
-                        ],
-                        $this->_getContainer()
-                    ]
-                );
-            }
+            return $mRS;
+        };
 
-            if ($E->getMessage() === 'Redis server went away') {
-                $this->releaseConn();
-                return call_user_func_array([$this, $sMethod], $aArgv);
+        for ($i = 0; $i <= 1; $i++) {
+            try {
+                $mRS = $cbRun();
+            } catch (\RedisException $E) {
+                $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
+                $sErr = $E->getMessage();
+                if ($nEV) {
+                    $nEV->fire(
+                        RedisEvent::EV_EXEC_EXCEPTION,
+                        [
+                            [
+                                'obj'    => $this,
+                                'method' => $sMethod,
+                                'argv'   => $aArgv,
+                                'local'  => $Local,
+                                'code'   => $iErr,
+                                'msg'    => $sErr,
+                                'E'      => $E,
+                            ],
+                            $this->_getContainer()
+                        ]
+                    );
+                }
+
+                if ($E->getMessage() === 'Redis server went away') {
+                    $this->releaseConn();
+                    $nEV->fire(
+                        RedisEvent::EV_EXEC_RETRY,
+                        [
+                            [
+                                'obj'         => $this,
+                                'method'      => $sMethod,
+                                'argv'        => $aArgv,
+                                'local'       => $Local,
+                                'code'        => $iErr,
+                                'msg'         => $sErr,
+                                'retry_times' => $i,
+                                'E'           => $E,
+                            ],
+                            $this->_getContainer()
+                        ]
+                    );
+                }
+                continue;
             }
+            break;
         }
 
         return [$iErr, $sErr, $mRS];
