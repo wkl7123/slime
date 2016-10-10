@@ -5,6 +5,16 @@ Trait ConfigureTrait
 {
     protected $aData = [];
 
+    /**
+     * @param array $aData
+     *
+     * @return void
+     */
+    public function loadData($aData)
+    {
+        $this->aData = array_merge($this->aData, $aData);
+    }
+
     public function __construct(){}
 
     /**
