@@ -1,44 +1,61 @@
 <?php
 namespace Slime\Config;
 
+use Psr\Log\LoggerInterface;
 use Slime\Container\ContainerObject;
 use SlimeInterface\Config\ConfigureInterface;
 
 class PHPConfAdaptor extends ContainerObject implements ConfigureInterface
 {
     use ConfigureTrait;
+    use ConfigureFileTrait;
 
     /**
-     * @param string $sDir
+     * @return LoggerInterface|null
      */
-    public function loadDir($sDir)
+    protected function getLogger()
     {
-        if (!is_dir($sDir)) {
-            goto END;
-        }
-        if (($rDir = opendir($sDir)) === false) {
-            goto END;
-        }
-        while (($sFileName = readdir($rDir)) !== false) {
-            if (ltrim($sFileName, '.') === '') {
-                continue;
-            }
-            $this->aData = array_merge($this->aData, (require $sDir . DIRECTORY_SEPARATOR . $sFileName));
-        }
-
-        END:
+        return $this->_getIfExist('Log');
     }
 
     /**
-     * @param string $sFile
+     * @param string $sFilePath
+     *
+     * @return array|bool
      */
-    public function loadFile($sFile)
+    protected function getDataFromFile($sFilePath)
     {
-        if (!file_exists($sFile)) {
+        $nLog     = $this->getLogger();
+        $sPackage = $this->getPackageName();
+
+        # load
+        $mRS = require $sFilePath;
+        if (!is_array($mRS)) {
+            $nLog && $nLog->notice(
+                [
+                    "package" => $sPackage,
+                    "msg"     => "data in file[$sFilePath] is not array"
+                ]
+            );
+            $mRS = [];
             goto END;
         }
-        $this->aData = array_merge($this->aData, (require $sFile));
+        $nLog && $nLog->debug(
+            [
+                "package" => $sPackage,
+                "msg"     => "load data from file[$sFilePath] succ"
+            ]
+        );
 
         END:
+        return $mRS;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getPackageName()
+    {
+        return 'slime.config.php';
     }
 }

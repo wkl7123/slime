@@ -32,17 +32,22 @@ class ContainerObject
 
     public function _getForce($sName)
     {
+        if ($this->__Container === null) {
+            throw new \RuntimeException("[slime.container] ; container is not register before");
+        }
         return $this->__Container->get($sName);
     }
 
     public function _getIfExist($sName)
     {
-        return $this->__Container->has($sName) ? $this->__Container->get($sName) : null;
+        return $this->__Container === null ? null : (
+            $this->__Container->has($sName) ? $this->__Container->get($sName) : null
+        );
     }
 
     public function __sleep()
     {
-        $Ref = new \ReflectionObject($this);
+        $Ref   = new \ReflectionObject($this);
         $aProp = $Ref->getDefaultProperties();
         unset($aProp['__Container']);
         $aPropKey = array_keys($aProp);

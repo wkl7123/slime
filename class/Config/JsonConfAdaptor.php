@@ -1,47 +1,78 @@
 <?php
 namespace Slime\Config;
 
+use Psr\Log\LoggerInterface;
 use Slime\Container\ContainerObject;
 use SlimeInterface\Config\ConfigureInterface;
 
 class JsonConfAdaptor extends ContainerObject implements ConfigureInterface
 {
     use ConfigureTrait;
+    use ConfigureFileTrait;
 
     /**
-     * @param string $sDir
+     * @return LoggerInterface|null
      */
-    public function loadDir($sDir)
+    protected function getLogger()
     {
-        if (!is_dir($sDir)) {
-            goto END;
-        }
-        if (($rDir = opendir($sDir)) === false) {
-            goto END;
-        }
-        while (($sFileName = readdir($rDir)) !== false) {
-            if (ltrim($sFileName, '.') === '') {
-                continue;
-            }
-            $this->aData = array_merge(
-                $this->aData,
-                json_decode(file_get_contents($sDir . DIRECTORY_SEPARATOR . $sFileName), true)
-            );
-        }
-
-        END:
+        return $this->_getIfExist('Log');
     }
 
     /**
-     * @param string $sFile
+     * @param string $sFilePath
+     *
+     * @return array|bool
      */
-    public function loadFile($sFile)
+    protected function getDataFromFile($sFilePath)
     {
-        if (!file_exists($sFile)) {
+        $mRS      = false;
+        $nLog     = $this->getLogger();
+        $sPackage = $this->getPackageName();
+
+        # load
+        $bsContent = file_get_contents($sFilePath);
+        if ($bsContent === false) {
+            $nLog && $nLog->notice(
+                [
+                    "package" => $sPackage,
+                    "msg"     => "load data from file[$sFilePath] failed"
+                ]
+            );
             goto END;
         }
-        $this->aData = array_merge($this->aData, json_decode(file_get_contents($sFile), true));
+
+        # parse
+        $baData = json_decode($bsContent, true);
+        if ($baData === false) {
+            $nLog && $nLog->notice(
+                [
+                    "package"  => $sPackage,
+                    "msg"      => "json_decode data failed",
+                    "err_code" => json_last_error(),
+                    "err_msg"  => json_last_error_msg()
+                ]
+            );
+            goto END;
+        }
+
+        # result
+        $mRS = $baData;
+        $nLog && $nLog->debug(
+            [
+                "package" => $sPackage,
+                "msg"     => "load data from file[$sFilePath] succ"
+            ]
+        );
 
         END:
+        return $mRS;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getPackageName()
+    {
+        return 'slime.config.json';
     }
 }
