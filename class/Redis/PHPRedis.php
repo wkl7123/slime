@@ -21,7 +21,7 @@ class PHPRedis extends ContainerObject
     /** @var array */
     protected $aOptionConf;
 
-    /** @var null|\Memcached */
+    /** @var null|\Redis */
     private $nInst;
 
     public function __construct(array $aServer, array $aOption = [])
@@ -130,6 +130,12 @@ class PHPRedis extends ContainerObject
 
     public function releaseConn()
     {
+        $this->nInst->close();
         $this->nInst = null;
+    }
+
+    public function __destruct()
+    {
+        $this->releaseConn();
     }
 }

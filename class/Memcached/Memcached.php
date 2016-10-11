@@ -107,4 +107,9 @@ class Memcached extends ContainerObject
     {
         $this->nInst = null;
     }
+
+    public function __destruct()
+    {
+        $this->releaseConn();
+    }
 }
