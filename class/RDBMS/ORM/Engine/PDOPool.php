@@ -11,7 +11,7 @@ class PDOPool extends ContainerObject implements EnginePoolInterface
     /** @var array */
     protected $aConf;
 
-    /** @var array */
+    /** @var PDO[] */
     protected $aPDO;
 
     public function __construct(array $aConf)
@@ -44,5 +44,12 @@ class PDOPool extends ContainerObject implements EnginePoolInterface
     public function getAllInst()
     {
         return $this->aPDO;
+    }
+
+    public function __destruct()
+    {
+        foreach ($this->aPDO as $PDO) {
+            $PDO->releaseConn();
+        }
     }
 }
