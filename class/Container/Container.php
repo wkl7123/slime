@@ -85,6 +85,15 @@ class Container implements ContainerInterface, \ArrayAccess
         return isset($this->aData[$id]) || isset($this->aCB[$id]);
     }
 
+    /**
+     * @param mixed $id
+     *
+     * @return bool
+     */
+    public function hasData($id)
+    {
+        return isset($this->aData[$id]);
+    }
 
     /**
      * Whether a offset exists
