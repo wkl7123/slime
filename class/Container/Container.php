@@ -26,19 +26,6 @@ class Container implements ContainerInterface, \ArrayAccess
         return $Obj;
     }
 
-    /**
-     * @param string $sKey1
-     * ....
-     */
-    public function clearObj($sKey1)
-    {
-        foreach (func_get_args() as $sKey) {
-            if (isset($this->aData[$sKey])) {
-                unset($this->aData[$sKey]);
-            }
-        }
-    }
-
     public function __get($sName)
     {
         return $this->get($sName);
@@ -58,7 +45,7 @@ class Container implements ContainerInterface, \ArrayAccess
     {
         if (!isset($this->aData[$id])) {
             if (!isset($this->aCB[$id])) {
-                throw new NotFoundException();
+                throw new NotFoundException("container data[$id] is not register before");
             }
             $mV = call_user_func($this->aCB[$id], $this);
             if ($mV instanceof ContainerObject) {
@@ -86,13 +73,65 @@ class Container implements ContainerInterface, \ArrayAccess
     }
 
     /**
-     * @param mixed $id
+     * @param string $id
      *
      * @return bool
      */
     public function hasData($id)
     {
         return isset($this->aData[$id]);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function hasCallable($id)
+    {
+        return isset($this->aCB[$id]);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return callable|null
+     */
+    public function getCallable($id)
+    {
+        return isset($this->aCB[$id]) ? $this->aCB[$id] : null;
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return mixed|null
+     */
+    public function make($id)
+    {
+        if (!isset($this->aCB['id'])) {
+            return null;
+        }
+        $mV = call_user_func($this->aCB[$id], $this);
+        if ($mV instanceof ContainerObject) {
+            $mV->__init__($this);
+        }
+        return $mV;
+    }
+
+    /**
+     * @param string $sKey1
+     * ....
+     *
+     * @return void
+     */
+    public function clearData($sKey1)
+    {
+        foreach (func_get_args() as $sKey) {
+            if (isset($this->aData[$sKey])) {
+                unset($this->aData[$sKey]);
+            }
+        }
     }
 
     /**

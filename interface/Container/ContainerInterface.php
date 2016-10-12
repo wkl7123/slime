@@ -30,4 +30,41 @@ interface ContainerInterface
      * @return boolean
      */
     public function has($id);
+
+    // add by smallslime
+    /**
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function hasData($id);
+
+    /**
+     * @param string $id
+     *
+     * @return bool
+     */
+    public function hasCallable($id);
+
+    /**
+     * @param string $id
+     *
+     * @return callable|null
+     */
+    public function getCallable($id);
+
+    /**
+     * @param string $id
+     *
+     * @return mixed|null
+     */
+    public function make($id);
+
+    /**
+     * @param string $sKey1
+     * ....
+     *
+     * @return void
+     */
+    public function clearData($sKey1);
 }
