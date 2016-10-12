@@ -130,7 +130,9 @@ class PHPRedis extends ContainerObject
 
     public function releaseConn()
     {
-        $this->nInst->close();
+        if ($this->nInst) {
+            $this->nInst->close();
+        }
         $this->nInst = null;
     }
 
