@@ -5,21 +5,21 @@ use Slime\Log\Logger;
 
 Trait ConfigureFileTrait
 {
-    protected $aData = [];
+    use ConfigureTrait;
 
     /**
      * @param string $sDir
      */
     public function loadDir($sDir)
     {
-        $nLog = $this->getLogger();
+        $nLog     = $this->getLogger();
         $sPackage = $this->getPackageName();
 
         if (!is_dir($sDir)) {
             $nLog->notice(
                 [
                     "package" => $sPackage,
-                    "msg" => "dir[$sDir] is not dir"
+                    "msg"     => "dir[$sDir] is not dir"
                 ]
             );
             goto END;
@@ -28,7 +28,7 @@ Trait ConfigureFileTrait
             $nLog->notice(
                 [
                     "package" => $sPackage,
-                    "msg" => "open dir[$sDir] failed"
+                    "msg"     => "open dir[$sDir] failed"
                 ]
             );
             goto END;
@@ -67,14 +67,16 @@ Trait ConfigureFileTrait
     abstract protected function getLogger();
 
     /**
-     * @return string
-     */
-    abstract protected function getPackageName();
-
-    /**
      * @param string $sFilePath
      *
      * @return string|bool
      */
     abstract protected function getDataFromFile($sFilePath);
+
+    /**
+     * name for log
+     *
+     * @return string
+     */
+    abstract protected function getPackageName();
 }

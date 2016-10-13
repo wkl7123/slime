@@ -7,7 +7,6 @@ use SlimeInterface\Config\ConfigureInterface;
 
 class PHPConfAdaptor extends ContainerObject implements ConfigureInterface
 {
-    use ConfigureTrait;
     use ConfigureFileTrait;
 
     /**
