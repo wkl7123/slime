@@ -16,7 +16,7 @@ Trait ConfigureFileTrait
         $sPackage = $this->getPackageName();
 
         if (!is_dir($sDir)) {
-            $nLog->notice(
+            $nLog && $nLog->notice(
                 [
                     "package" => $sPackage,
                     "msg"     => "dir[$sDir] is not dir"
@@ -25,7 +25,7 @@ Trait ConfigureFileTrait
             goto END;
         }
         if (($rDir = opendir($sDir)) === false) {
-            $nLog->notice(
+            $nLog && $nLog->notice(
                 [
                     "package" => $sPackage,
                     "msg"     => "open dir[$sDir] failed"
@@ -42,7 +42,18 @@ Trait ConfigureFileTrait
             if (!is_file($sFilePath)) {
                 continue;
             }
-            $this->aData = array_merge($this->aData, $this->getDataFromFile($sFilePath));
+            $baData = $this->getDataFromFile($sFilePath);
+            if ($baData === false) {
+                $nLog && $nLog->notice(
+                    [
+                        "package" => $sPackage,
+                        "msg"     => "data format error in file[$sFileName] when load dir[$sDir]"
+                    ]
+                );
+                continue;
+            }
+
+            $this->aData = array_merge($this->aData, $baData);
         }
 
         END:
@@ -53,10 +64,23 @@ Trait ConfigureFileTrait
      */
     public function loadFile($sFile)
     {
+        $nLog     = $this->getLogger();
+        $sPackage = $this->getPackageName();
+
         if (!file_exists($sFile)) {
             goto END;
         }
-        $this->aData = array_merge($this->aData, json_decode(file_get_contents($sFile), true));
+        $baData = json_decode(file_get_contents($sFile), true);
+        if ($baData === false) {
+            $nLog && $nLog->notice(
+                [
+                    "package" => $sPackage,
+                    "msg"     => "data format error in file[$sFile]"
+                ]
+            );
+            goto END;
+        }
+        $this->aData = array_merge($this->aData, $baData);
 
         END:
     }

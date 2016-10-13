@@ -55,7 +55,8 @@ class PHPRedis extends ContainerObject
             return $mRS;
         };
 
-        for ($i = 0; $i <= 1; $i++) {
+        $iRetryTimes = isset($this->aServerConf['retry_times']) ? (int)$this->aServerConf['retry_times'] : 1;
+        for ($i = 0; $i <= $iRetryTimes; $i++) {
             try {
                 $mRS = $cbRun();
             } catch (\RedisException $E) {
@@ -64,25 +65,6 @@ class PHPRedis extends ContainerObject
                 if ($nEV) {
                     $nEV->fire(
                         RedisEvent::EV_EXEC_EXCEPTION,
-                        [
-                            [
-                                'obj'    => $this,
-                                'method' => $sMethod,
-                                'argv'   => $aArgv,
-                                'local'  => $Local,
-                                'code'   => $iErr,
-                                'msg'    => $sErr,
-                                'E'      => $E,
-                            ],
-                            $this->_getContainer()
-                        ]
-                    );
-                }
-
-                if ($E->getMessage() === 'Redis server went away') {
-                    $this->releaseConn();
-                    $nEV->fire(
-                        RedisEvent::EV_EXEC_RETRY,
                         [
                             [
                                 'obj'         => $this,
@@ -108,19 +90,35 @@ class PHPRedis extends ContainerObject
 
     /**
      * @return \Redis
+     * @throws \RedisException
      */
     protected function getInst()
     {
         if ($this->nInst === null) {
             $Redis = new \Redis();
-            $Redis->connect((string)$this->aServerConf['host'], (int)$this->aServerConf['port'],
-                $this->aServerConf['timeout']);
-            $Redis->setOption(\Redis::OPT_READ_TIMEOUT, $this->aOptionConf['read_timeout']);
+            $bRS   = $Redis->connect(
+                (string)$this->aServerConf['host'],
+                (int)$this->aServerConf['port'],
+                (float)$this->aServerConf['timeout']
+            );
+            if ($bRS === false) {
+                throw new \RedisException('redis connect failed');
+            }
+            $bRS = $Redis->setOption(\Redis::OPT_READ_TIMEOUT, $this->aOptionConf['read_timeout']);
+            if ($bRS === false) {
+                throw new \RedisException('redis set option failed');
+            }
             if (isset($this->aOptionConf['auth'])) {
-                $Redis->auth($this->aOptionConf['auth']);
+                $bRS = $Redis->auth($this->aOptionConf['auth']);
+                if ($bRS === false) {
+                    throw new \RedisException('redis auth failed');
+                }
             }
             if (isset($this->aOptionConf['db'])) {
-                $Redis->select($this->aOptionConf['db']);
+                $bRS = $Redis->select($this->aOptionConf['db']);
+                if ($bRS === false) {
+                    throw new \RedisException('redis select db failed');
+                }
             }
             $this->nInst = $Redis;
         }
