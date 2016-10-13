@@ -80,6 +80,7 @@ class PHPRedis extends ContainerObject
                         ]
                     );
                 }
+                $this->releaseConn();
                 continue;
             }
             break;
