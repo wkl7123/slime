@@ -44,7 +44,8 @@ class Memcached extends ContainerObject
         $nEV = $this->_getIfExist('Event');
 
         if ($nEV !== null) {
-            $Local = new \ArrayObject();
+            $Local         = new \ArrayObject();
+            $Local['Inst'] = $MC;
             $nEV->fire(MemcachedEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
             if (!isset($Local['__RESULT__'])) {
                 $mRS                 = call_user_func_array([$MC, $sMethod], $aArgv);

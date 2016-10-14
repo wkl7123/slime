@@ -36,12 +36,12 @@ class PHPRedis extends ContainerObject
         $sErr = '';
         $mRS  = null;
 
-        $Local = new \ArrayObject();
         /** @var null|EventInterface $nEV */
         $nEV   = $this->_getIfExist('Event');
-        $cbRun = function () use ($sMethod, $aArgv, $nEV, $Local) {
+        $cbRun = function ($Local) use ($sMethod, $aArgv, $nEV) {
             $Redis = $this->getInst();
             if ($nEV !== null) {
+                $Local['Inst'] = $Redis;
                 $nEV->fire(RedisEvent::EV_BEFORE_EXEC, [$sMethod, $aArgv, $Local]);
                 if (!isset($Local['__RESULT__'])) {
                     $mRS                 = call_user_func_array([$Redis, $sMethod], $aArgv);
@@ -57,8 +57,9 @@ class PHPRedis extends ContainerObject
 
         $iRetryTimes = isset($this->aServerConf['retry_times']) ? (int)$this->aServerConf['retry_times'] : 1;
         for ($i = 0; $i <= $iRetryTimes; $i++) {
+            $Local = new \ArrayObject();
             try {
-                $mRS = $cbRun();
+                $mRS = $cbRun($Local);
             } catch (\RedisException $E) {
                 $iInst = (int)($this->getInst()->socket);
                 $this->releaseConn();
