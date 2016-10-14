@@ -60,7 +60,7 @@ class PHPRedis extends ContainerObject
             try {
                 $mRS = $cbRun();
             } catch (\RedisException $E) {
-                $iInst = isset($Redis) ? (int)$Redis : 0;
+                $iInst = (int)($this->getInst()->socket);
                 $this->releaseConn();
                 $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
                 $sErr = $E->getMessage();
