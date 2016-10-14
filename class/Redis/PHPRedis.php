@@ -76,6 +76,7 @@ class PHPRedis extends ContainerObject
                                 'msg'         => $sErr,
                                 'retry_times' => $i,
                                 'E'           => $E,
+                                'inst'        => isset($Redis) ? $Redis : null
                             ],
                             $this->_getContainer()
                         ]

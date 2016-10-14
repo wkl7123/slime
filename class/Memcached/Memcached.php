@@ -69,7 +69,8 @@ class Memcached extends ContainerObject
                             'argv'   => $aArgv,
                             'local'  => $Local,
                             'code'   => $iErr,
-                            'msg'    => $sErr
+                            'msg'    => $sErr,
+                            'inst'   => isset($MC) ? $MC : null
                         ],
                         $this->_getContainer()
                     ]
