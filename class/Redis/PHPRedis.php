@@ -60,6 +60,7 @@ class PHPRedis extends ContainerObject
             try {
                 $mRS = $cbRun();
             } catch (\RedisException $E) {
+                $iInst = isset($Redis) ? (int)$Redis : 0;
                 $this->releaseConn();
                 $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
                 $sErr = $E->getMessage();
@@ -76,7 +77,7 @@ class PHPRedis extends ContainerObject
                                 'msg'         => $sErr,
                                 'retry_times' => $i,
                                 'E'           => $E,
-                                'inst'        => isset($Redis) ? $Redis : null
+                                'inst'        => $iInst
                             ],
                             $this->_getContainer()
                         ]
