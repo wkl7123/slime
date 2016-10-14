@@ -92,6 +92,7 @@ class ModelFactory extends ContainerObject implements ModelFactoryInterface
 
     public function releaseEnginePool()
     {
+        $this->nEnginePool->release();
         $this->nEnginePool = null;
     }
 

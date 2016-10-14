@@ -46,10 +46,18 @@ class PDOPool extends ContainerObject implements EnginePoolInterface
         return $this->aPDO;
     }
 
-    public function __destruct()
+    /**
+     * @return void
+     */
+    public function release()
     {
         foreach ($this->aPDO as $PDO) {
             $PDO->releaseConn();
         }
+    }
+
+    public function __destruct()
+    {
+        $this->release();
     }
 }
