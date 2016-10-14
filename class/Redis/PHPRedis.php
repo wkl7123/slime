@@ -59,7 +59,9 @@ class PHPRedis extends ContainerObject
         for ($i = 0; $i <= $iRetryTimes; $i++) {
             $Local = new \ArrayObject();
             try {
-                $mRS = $cbRun($Local);
+                $iErr = 0;
+                $sErr = '';
+                $mRS  = $cbRun($Local);
             } catch (\RedisException $E) {
                 $iInst = (int)($this->getInst()->socket);
                 $this->releaseConn();
@@ -87,6 +89,11 @@ class PHPRedis extends ContainerObject
                 continue;
             }
             break;
+        }
+
+        if ($i > 0 && $iErr > 0) {
+            $sErr = "retry[$i][$iErr,$sErr]";
+            $iErr = -99999998;
         }
 
         return [$iErr, $sErr, $mRS];
