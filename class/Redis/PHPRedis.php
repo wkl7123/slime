@@ -60,6 +60,7 @@ class PHPRedis extends ContainerObject
             try {
                 $mRS = $cbRun();
             } catch (\RedisException $E) {
+                $this->releaseConn();
                 $iErr = ($iCode = $E->getCode()) === 0 ? -99999999 : $iCode;
                 $sErr = $E->getMessage();
                 if ($nEV) {
@@ -80,7 +81,6 @@ class PHPRedis extends ContainerObject
                         ]
                     );
                 }
-                $this->releaseConn();
                 continue;
             }
             break;
